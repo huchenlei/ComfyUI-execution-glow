@@ -40,13 +40,29 @@ const ext = {
       // Save context state
       ctx.save()
 
-      // Get node dimensions
+      // Get node dimensions from LGraphNode API
       const padding = 1
+      const [nodeWidth, nodeHeight] = this.renderingSize
       const x = -padding
       const y = -LiteGraph.NODE_TITLE_HEIGHT - padding
-      const width = this.size[0] + padding * 2
-      const height = this.size[1] + LiteGraph.NODE_TITLE_HEIGHT + padding * 2
-      const radius = 8
+      const width = nodeWidth + padding * 2
+      const height = nodeHeight + LiteGraph.NODE_TITLE_HEIGHT + padding * 2
+
+      // Determine corner radii based on node shape
+      // RenderShape.BOX = 1, RenderShape.ROUND = 2, RenderShape.CARD = 4
+      const shape = this.renderingShape
+      const baseRadius = LiteGraph.ROUND_RADIUS
+      let cornerRadii
+      if (shape === 1) {
+        // BOX shape - no rounding
+        cornerRadii = 0
+      } else if (shape === 4) {
+        // CARD shape - top-left and bottom-right rounded
+        cornerRadii = [baseRadius, 0, baseRadius, 0]
+      } else {
+        // ROUND shape (default) - all corners rounded
+        cornerRadii = baseRadius
+      }
 
       // Set up the glow effect using shadow
       ctx.shadowColor = glowColor
@@ -56,7 +72,7 @@ const ext = {
 
       // Draw rounded rectangle path
       ctx.beginPath()
-      ctx.roundRect(x, y, width, height, radius)
+      ctx.roundRect(x, y, width, height, cornerRadii)
 
       // Draw multiple strokes for stronger glow effect
       ctx.strokeStyle = glowColor
